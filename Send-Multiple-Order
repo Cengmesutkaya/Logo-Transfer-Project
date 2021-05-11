@@ -1,0 +1,139 @@
+        public IntegratedOrderStatus sendMultipleOrder(List<Order> orders)
+        {
+            string message = "";
+            long remoteOrderId = 0;
+            List<IntegratedOrderDto> receivedOrders = new List<IntegratedOrderDto>();
+            try
+            {
+                if (isLoggedIn)
+                {
+                    foreach (var order in orders)
+                    {
+                        Data newOrder = unity.NewDataObject(DataObjectType.doSalesOrderSlip);
+                        newOrder.New();
+                        newOrder.DataFields.FieldByName("TYPE").Value = order.type;
+
+                        if (useDefaultNumber)
+                        {
+                            newOrder.DataFields.FieldByName("NUMBER").Value = "~";
+                        }
+                        else
+                        {
+                            newOrder.DataFields.FieldByName("NUMBER").Value = order.receiptNumber;
+                        }
+                        if (useShortDate)
+                        {
+                            newOrder.DataFields.FieldByName("DATE").Value = Convert.ToDateTime(order.orderDate.ToShortDateString());
+                        }
+                        else
+                        {
+                            newOrder.DataFields.FieldByName("DATE").Value = Convert.ToDateTime(order.orderDate.ToString("dd-MM-yyyy"));
+                        }
+
+                        newOrder.DataFields.FieldByName("TIME").Value = helper.Hour(order.deliveryDate.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+                        newOrder.DataFields.FieldByName("SALESMAN_CODE").Value = order.salesman.code;
+                        newOrder.DataFields.FieldByName("ARP_CODE").Value = order.customer.code;
+                        newOrder.DataFields.FieldByName("SOURCE_WH").Value = order.warehouse.code;
+                        newOrder.DataFields.FieldByName("SOURCE_COST_GRP").Value = order.warehouse.code;
+                        newOrder.DataFields.FieldByName("ORDER_STATUS").Value = 1;
+                        if (useCypheCode)
+                        {
+                            newOrder.DataFields.FieldByName("AUTH_CODE").Value = order.customer.code.Substring(2, 2);
+                        }
+                        newOrder.DataFields.FieldByName("AUXIL_CODE").Value = order.customer.code.Substring(4, 2);
+                        newOrder.DataFields.FieldByName("DIVISION").Value = order.customerBranch.code;
+                        newOrder.DataFields.FieldByName("TOTAL_VAT").Value = order.vatTotal;
+                        newOrder.DataFields.FieldByName("TOTAL_GROSS").Value = order.grossTotal;
+                        newOrder.DataFields.FieldByName("TOTAL_NET").Value = order.preVatNetTotal;
+                        newOrder.DataFields.FieldByName("NOTES1").Value = order.salesmanNote;
+                        newOrder.DataFields.FieldByName("PAYMENT_CODE").Value = order.paymentType.code;
+                        Lines newOrderLines = newOrder.DataFields.FieldByName("TRANSACTIONS").Lines;
+                        for (int i = 0; i < order.details.Count; i++)
+                        {
+                            if (newOrderLines.AppendLine())
+                            {
+                                OrderDetail detail = order.details[i];
+                                if (detail.type == 2)  // indirim
+                                {
+                                    newOrderLines[i].FieldByName("TYPE").Value = detail.type;
+                                    newOrderLines[i].FieldByName("DISCOUNT_RATE").Value = Convert.ToDouble(Math.Round(detail.rate, 2));
+                                    newOrderLines[i].FieldByName("DUE_DATE").Value = Convert.ToDateTime(order.orderDate.ToString("dd-MM-yyyy"));
+                                    newOrderLines[i].FieldByName("SALESMAN_CODE").Value = order.salesman.code;
+                                }
+                                else
+                                {
+
+                                    newOrderLines[i].FieldByName("TYPE").Value = 0;
+                                    newOrderLines[i].FieldByName("MASTER_CODE").Value = detail.productCode;
+                                    // newOrderLines[i].FieldByName("SOURCEINDEX").Value = order.warehouse.code;
+                                    //  newOrderLines[i].FieldByName("SOURCECOSTGRP").Value = order.warehouse.code;
+                                    newOrderLines[i].FieldByName("QUANTITY").Value = detail.quantity;
+                                    newOrderLines[i].FieldByName("PRICE").Value = Convert.ToDouble(detail.orderItemPrice);
+                                    newOrderLines[i].FieldByName("TOTAL").Value = detail.grossTotal;
+                                    newOrderLines[i].FieldByName("CURR_PRICE").Value = 160;  // currency TL
+                                    newOrderLines[i].FieldByName("UNIT_CODE").Value = helper.getUnit(detail.unitCode);
+                                    newOrderLines[i].FieldByName("PAYMENT_CODE").Value = order.paymentType.code;
+                                    newOrderLines[i].FieldByName("DUE_DATE").Value = Convert.ToDateTime(order.orderDate.ToString("dd-MM-yyyy"));
+
+                                    newOrderLines[i].FieldByName("VAT_RATE").Value = Convert.ToInt32(detail.vatRate);
+                                    newOrderLines[i].FieldByName("VAT_AMOUNT").Value = detail.vatTotal;
+                                    newOrderLines[i].FieldByName("PRCLISTTYPE").Value = 2;
+                                }
+                            }
+                        }
+
+                        newOrder.FillAccCodes();
+                        newOrder.CreateCompositeLines();
+                        newOrder.ReCalculate();
+                        ValidateErrors err = newOrder.ValidateErrors;
+                        newOrder.ExportToXML("SALES_ORDERS", @"C:\orders.xml");
+                        helper.LogFile("Post İşlemi Basladı", "-", "-", "-", "-");
+                        if (newOrder.Post())
+                        {
+                            var integratedOrderRef = newOrder.DataFields.FieldByName("INTERNAL_REFERENCE").Value;
+                            IntegratedOrderDto recievedOrder = new IntegratedOrderDto(message, integratedOrderRef, order.orderId, true);
+                            receivedOrders.Add(recievedOrder);
+                        }
+                        else
+                        {
+                            if (newOrder.ErrorCode != 0)
+                            {
+                                message = "DBError(" + newOrder.ErrorCode.ToString() + ")-" + newOrder.ErrorDesc + newOrder.DBErrorDesc;
+                                IntegratedOrderDto recievedOrder = new IntegratedOrderDto(message, remoteOrderId, order.orderId, false);
+                                receivedOrders.Add(recievedOrder);
+                            }
+                            else if (newOrder.ValidateErrors.Count > 0)
+                            {
+                                for (int i = 0; i < err.Count; i++)
+                                {
+                                    message += err[i].Error;
+                                }
+
+                                IntegratedOrderDto recievedOrder = new IntegratedOrderDto(message, remoteOrderId, order.orderId, false);
+                                receivedOrders.Add(recievedOrder);
+                            }
+                        }
+                        helper.LogFile("POST Bitti", "-", "-", "-", "-");                    
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Logoya Bağlantı Problemi Yaşandı, Siparişler Aktarılamadı.", "Logo Bağlantı Hatası", MessageBoxButtons.OK);
+                }
+            }
+            catch (Exception ex)
+            {
+                IntegratedOrderDto recievedOrder = new IntegratedOrderDto(ex.Message.ToString(), remoteOrderId, 0, false);
+                receivedOrders.Add(recievedOrder);
+            }
+            finally
+            {
+                unity.UserLogout();
+                unity.Disconnect();
+                isLoggedIn = false;
+                message = "";
+            }
+            integratedOrders.orders = receivedOrders;
+            integratedOrders.distributorId = distributorId;
+            return integratedOrders;
+        }
