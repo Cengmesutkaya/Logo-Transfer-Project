@@ -1,0 +1,23 @@
+       private void frmSettings_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                txtUserName.Text = ConfigurationManager.AppSettings.Get("Username");
+                txtPassword.Text = ConfigurationManager.AppSettings.Get("Password");
+                txtFirmNo.Text = ConfigurationManager.AppSettings.Get("FirmNo");
+                txtPeriodNo.Text = ConfigurationManager.AppSettings.Get("PeriodNo");
+
+                txtServiceURL.Text = ConfigurationManager.AppSettings.Get("URL");
+                txtClientID.Text = ConfigurationManager.AppSettings.Get("ClientID");
+                txtClientSecret.Text = ConfigurationManager.AppSettings.Get("ClientSecret");
+
+                if (txtPassword.Text.Length > 0)
+                    chkShowPass.Visible = false;
+                if (txtClientSecret.Text.Length > 0)
+                    chkShowClientSecret.Visible = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
