@@ -1,0 +1,51 @@
+    public void CreateProduct()
+        {
+
+
+            UnityObjects.Data product = new Data();
+            UnityApp.NewDataObject(UnityObjects.DataObjectType.doMaterial);
+
+            product.New();
+
+            product.DataFields.FieldByName("CODE").Value = _code;
+            //Zorunlu Alandir.Urun kodu
+            product.DataFields.FieldByName("NAME").Value = _name;
+            //Zorunlu Alandir. Urun adi
+            product.DataFields.FieldByName("CARD_TYPE").Value = _cardtype;
+            //Zorunlu Alandir.Kart tipi 
+
+            product.DataFields.FieldByName("UNITSET_CODE").Value = "ADET";
+            //Zorunlu Alandir.Birim (adet,kg,gr...)
+            // _newMalzeme.DataFields.FieldByName("GROUP_CODE").Value = "AGÇ"; 
+            //Zorunlu degildir. Malzeme grup kodu
+            product.DataFields.FieldByName("VAT").Value = _vat;
+            //Zorunlu Alandir.KDV
+            product.DataFields.FieldByName("SELVAT").Value = _vat;
+            product.DataFields.FieldByName("RETURNVAT").Value = _vat;
+            //Malzeme kartinin detayi ekleniyor.
+            Lines productDetail = product.DataFields.FieldByName("UNITS").Lines;
+            //Malzeme detayi. Zorunlu degildir.
+            //if (detay.AppendLine())
+            {//ÜRÜNLER EKLENIYOR
+
+                productDetail[0].FieldByName("UNIT_CODE").Value = "ADET";
+                productDetail[0].FieldByName("USEF_MTRLCLASS").Value = 1;
+                productDetail[0].FieldByName("USEF_PURCHCLAS").Value = 1;
+                productDetail[0].FieldByName("USEF_SALESCLAS").Value = 1;
+                productDetail[0].FieldByName("CONV_FACT1").Value = 1;
+                productDetail[0].FieldByName("CONV_FACT2").Value = 1;
+                //detay[0].FieldByName("BARCODE").Value = "HP7700BARKOD7";
+                //detay[0].FieldByName("DATA_REFERENCE").Value ="~";
+                //detay[0].FieldByName("VOLUME").Value = "22";
+                //detay[0].FieldByName("WEIGHT").Value = "22";
+                Lines detay1 = productDetail[0].FieldByName("BARCODE_LIST").Lines;
+                if (detay1.AppendLine())
+                {
+                    detay1[0].FieldByName("BARCODE").Value = _barcode;
+                }
+            }
+            if (product.Post())
+            {
+                // İşlem Başarılı
+            }
+        }
