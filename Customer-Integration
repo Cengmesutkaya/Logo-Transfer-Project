@@ -1,0 +1,67 @@
+ public UnityApplication tiger = new UnityApplication();
+
+        public bool CreateCutomer()
+        {
+            bool result = false;
+
+            try
+            {
+                // Tiger programına bağlantı yap
+                if (tiger.Connect())
+                {
+                    // Kullanıcı girişi yap
+                    if (tiger.UserLogin("username", "password"))
+                    {
+                        // Tiger programındaki 1 numaralı firmaya giriş yap.
+                        if (tiger.CompanyLogin(1))
+                        {
+
+                            Data customer = tiger.NewDataObject(DataObjectType.doAccountsRP);
+                            customer.New();
+                            // Cari Hesap Tipi. 1: Alıcı
+                            customer.DataFields.FieldByName("ACCOUNT_TYPE").Value = 1;
+                            // Cari Hesap Kodu
+                            customer.DataFields.FieldByName("CODE").Value = "120.10.34.57";
+                            // Cari Hesap Ünvan
+                            customer.DataFields.FieldByName("TITLE").Value = "Sem Göksu";
+                            // Adres Detayı
+                            customer.DataFields.FieldByName("ADDRESS1").Value = "Ümraniye";
+                            // Şehir
+                            customer.DataFields.FieldByName("CITY").Value = "İstanbul";
+
+                            //Cari Kart bilgisini bağlandığınız Logo Tiger şirketine kayıt yapın
+                            if (customer.Post())
+                            {
+                                Console.WriteLine("Tigera cari hesap kaydı yapıldı!");
+                                result = true;
+                            }
+                            else
+                            {
+                                for (int i = 0; i < customer.ValidateErrors.Count; i++)
+                                {
+                                    Console.WriteLine("{0} - {1};",
+                                    customer.ValidateErrors[i].Error,
+                                    customer.ValidateErrors[i].ID);
+                                }
+
+                                result = false;
+                            }
+                            // Firmadan çıkış yap
+                            tiger.CompanyLogout();
+                        }
+                        // Kullanıcı çıkış yap
+                        tiger.UserLogout();
+                    }
+                    // Tiger programıyla bağlantıyı sonlandır
+                    tiger.Disconnect();
+                }
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine("Tigera cari hesap kaydı yapılamadı. Hata: {0}",
+                exp.Message);
+                result = false;
+            }
+            return result;
+        }
+    
