@@ -1,0 +1,34 @@
+  private void btnSave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                //Logo Objects & Logo Objects REST Service
+                config.AppSettings.Settings["Username"].Value = txtUserName.Text;
+                config.AppSettings.Settings["Password"].Value = txtPassword.Text;
+                config.AppSettings.Settings["FirmNo"].Value = txtFirmNo.Text;
+                config.AppSettings.Settings["PeriodNo"].Value = txtPeriodNo.Text;
+                //Logo Objects REST Service
+                config.AppSettings.Settings["URL"].Value = txtServiceURL.Text;
+                config.AppSettings.Settings["ClientID"].Value = txtClientID.Text;
+                config.AppSettings.Settings["ClientSecret"].Value = txtClientSecret.Text;
+
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+
+                Global.g_UserName = txtUserName.Text;
+                Global.g_UserPass = txtPassword.Text;
+                Global.g_FirmNr = txtFirmNo.Text;
+                Global.g_PeriodNr = txtPeriodNo.Text;
+
+                Global.g_URL = txtServiceURL.Text;
+                Global.g_clientID = txtClientID.Text;
+                Global.g_clientSecret = txtClientSecret.Text;
+
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
