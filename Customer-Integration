@@ -1,9 +1,7 @@
- public UnityApplication tiger = new UnityApplication();
-
+        public UnityApplication tiger = new UnityApplication();
         public bool CreateCutomer()
         {
             bool result = false;
-
             try
             {
                 // Tiger programına bağlantı yap
@@ -28,7 +26,6 @@
                             customer.DataFields.FieldByName("ADDRESS1").Value = "Ümraniye";
                             // Şehir
                             customer.DataFields.FieldByName("CITY").Value = "İstanbul";
-
                             //Cari Kart bilgisini bağlandığınız Logo Tiger şirketine kayıt yapın
                             if (customer.Post())
                             {
@@ -63,5 +60,4 @@
                 result = false;
             }
             return result;
-        }
-    
+        }   
