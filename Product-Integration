@@ -1,19 +1,14 @@
-    public void CreateProduct()
+        public void CreateProduct()
         {
-
-
             UnityObjects.Data product = new Data();
             UnityApp.NewDataObject(UnityObjects.DataObjectType.doMaterial);
-
             product.New();
-
             product.DataFields.FieldByName("CODE").Value = _code;
             //Zorunlu Alandir.Urun kodu
             product.DataFields.FieldByName("NAME").Value = _name;
             //Zorunlu Alandir. Urun adi
             product.DataFields.FieldByName("CARD_TYPE").Value = _cardtype;
             //Zorunlu Alandir.Kart tipi 
-
             product.DataFields.FieldByName("UNITSET_CODE").Value = "ADET";
             //Zorunlu Alandir.Birim (adet,kg,gr...)
             // _newMalzeme.DataFields.FieldByName("GROUP_CODE").Value = "AGÇ"; 
@@ -26,8 +21,8 @@
             Lines productDetail = product.DataFields.FieldByName("UNITS").Lines;
             //Malzeme detayi. Zorunlu degildir.
             //if (detay.AppendLine())
-            {//ÜRÜNLER EKLENIYOR
-
+            {
+            //ÜRÜNLER EKLENIYOR
                 productDetail[0].FieldByName("UNIT_CODE").Value = "ADET";
                 productDetail[0].FieldByName("USEF_MTRLCLASS").Value = 1;
                 productDetail[0].FieldByName("USEF_PURCHCLAS").Value = 1;
