@@ -20,9 +20,9 @@
             //Malzeme kartinin detayi ekleniyor.
             Lines productDetail = product.DataFields.FieldByName("UNITS").Lines;
             //Malzeme detayi. Zorunlu degildir.
-            //if (detay.AppendLine())
+            if (detay.AppendLine())
             {
-            //ÜRÜNLER EKLENIYOR
+                //ÜRÜNLER EKLENIYOR
                 productDetail[0].FieldByName("UNIT_CODE").Value = "ADET";
                 productDetail[0].FieldByName("USEF_MTRLCLASS").Value = 1;
                 productDetail[0].FieldByName("USEF_PURCHCLAS").Value = 1;
